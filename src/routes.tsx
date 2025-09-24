@@ -26,13 +26,13 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           { index: true, element: <Trips /> },
-          { path: "trips", element: <Trips /> },
-          { path: "trips/:id", element: <TripDetails /> },
-          { path: "trips/:id/access", element: <TripAccess /> },
+          { path: "/trips", element: <Trips /> },
+          { path: "/trips/:id", element: <TripDetails /> },
+          { path: "/trips/:id/access", element: <TripAccess /> },
         ],
       },
 
-      { path: "invite/:token", element: <InviteAccept /> },
+      { path: "/invite/accept", element: <InviteAccept /> },    
     ],
   },
 ]);
