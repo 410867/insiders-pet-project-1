@@ -43,18 +43,25 @@ export async function createInvite(tripId: string, email: string) {
   return { inviteId: id, link, reused: false };
 }
 
-export async function acceptInvite(tripId: string, email?: string) {
-  const u = auth.currentUser;
-  if (!u) throw new Error("Login required");
+export async function acceptInvite(tripId: string) {
+  const u = auth.currentUser!;
+  const emailLower = (u.email || "").toLowerCase();
+  const id = `${tripId}_${emailLower}`;
+    const snap = await getDoc(doc(db, "tripInvites", id));
+    console.log("invite check", { id, exists: snap.exists(), data: snap.data() });
 
-  const tripRef = doc(db, "trips", tripId);
   try {
-    await updateDoc(tripRef, { collaborators: arrayUnion(u.uid) });
-    return true;
+    const snap = await getDoc(doc(db, "tripInvites", id));
+    console.log("invite check", { id, exists: snap.exists(), data: snap.data() });
+  } catch (e) {
+    console.warn("invite read failed", e);
+  }
+
+  try {
+    await updateDoc(doc(db, "trips", tripId), { collaborators: arrayUnion(u.uid) });
+    console.log("joined as collaborator", { tripId, uid: u.uid });
   } catch (e: any) {
-    throw new Error(e?.code === "permission-denied"
-      ? "Інвайт не знайдено або прострочено."
-      : (e?.message || "Не вдалося прийняти інвайт"));
+    console.error("accept failed:", e?.code, e?.message);
+    throw e;
   }
 }
-

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../firebase/config";
 import { acceptInvite } from "../../services/invites";
 
@@ -10,23 +11,23 @@ export default function InviteAccept() {
 
   useEffect(() => {
     const tripId = sp.get("trip");
-    const email = sp.get("email") || undefined;
     if (!tripId) { setMsg("Некоректне посилання"); return; }
 
-    const run = async () => {
-      if (!auth.currentUser) {
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      if (!u) {
         nav(`/login?redirect=${encodeURIComponent(location.href)}`);
         return;
       }
       try {
-        await acceptInvite(tripId, email);
+        await acceptInvite(tripId);
         setMsg("Інвайт прийнято! Перехід…");
         nav(`/trips/${tripId}`);
       } catch (e: any) {
-        setMsg(`Помилка: ${e.message || e.code}`);
+        setMsg(`Помилка: ${e?.message || e?.code}`);
       }
-    };
-    run();
+    });
+
+    return () => unsub();
   }, []);
 
   return <p>{msg}</p>;
