@@ -2,9 +2,11 @@ import { Outlet, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { logout } from "../services/auth";
 import { useState } from "react";
+import { useUserRole } from "../hooks/useUserRole";
 
 export default function AppLayout() {
   const { user } = useAuth();
+  const { role, loading } = useUserRole();
   const nav = useNavigate();
   const [message, setMessage] = useState("");
 
@@ -20,7 +22,14 @@ export default function AppLayout() {
         {user ? (
           <>
             <Link to="/trips">Trips</Link>
-            <span>{user.email}</span>
+            <span>
+              {user.email}{" "}
+              {!loading && role ? (
+                <strong>({role})</strong>
+              ) : (
+                <em>loading...</em>
+              )}
+            </span>
             <button onClick={handleLogout}>Logout</button>
           </>
         ) : (

@@ -6,11 +6,22 @@ import {
   onAuthStateChanged,
   type User,
 } from "firebase/auth";
-import { auth } from "../firebase/config";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../firebase/config";
 
 export async function register(name: string, email: string, password: string) {
   const { user } = await createUserWithEmailAndPassword(auth, email, password);
+
   if (name) await updateProfile(user, { displayName: name });
+
+  await setDoc(doc(db, "users", user.uid), {
+    uid: user.uid,
+    name: name || "",
+    email,
+    role: "User",
+    createdAt: new Date().toISOString(),
+  });
+
   return user;
 }
 
